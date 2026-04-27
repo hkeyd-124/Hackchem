@@ -6,12 +6,12 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* CONFIG */
 const firebaseConfig = {
-  apiKey: "AIzaSyCO3BvrQ0GAmIebCwueVd88Do1YGk_iYJo",
-  authDomain: "hackchem-90922.firebaseapp.com",
-  projectId: "hackchem-90922",
-  storageBucket: "hackchem-90922.firebasestorage.app",
-  messagingSenderId: "86265015549",
-  appId: "1:86265015549:web:b7981ab509a1e06363a294"
+  apiKey: "AIzaSyBSteBiC3fkkZfbXqOkNkbqrPMl_AWvJbU",
+  authDomain: "hack-chem-v1.firebaseapp.com",
+  projectId: "hack-chem-v1",
+  storageBucket: "hack-chem-v1.firebasestorage.app",
+  messagingSenderId: "387273003535",
+  appId: "1:387273003535:web:75bf103ed9612d6c18097a"
 };
 
 /* INIT */
