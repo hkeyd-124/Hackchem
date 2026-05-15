@@ -315,7 +315,8 @@ padding: 0 10px;
 <div class="main">
 <div class="topbar">
 <div class="point-box" id="ethBox">
-  ⏳ <span id="ethBalance">...</span>
+  <span id="ethIcon">⏳</span>
+  <span id="ethBalance">...</span>
 </div>
 <div class="point-box" onclick="openCheckin()" id="pointBox">
   🧪 <span id="pointValue">0</span>
@@ -974,6 +975,7 @@ async function loadSepoliaBalance(wallet){
     // không có metamask
     if(!window.ethereum){
       document.getElementById("ethBalance").innerText = "No Wallet";
+      document.getElementById("ethIcon").innerText = "🔒";
       return;
     }
 
@@ -992,12 +994,13 @@ async function loadSepoliaBalance(wallet){
     // render UI
     document.getElementById("ethBalance").innerText =
       shortBalance + " ETH";
-
+document.getElementById("ethIcon").innerText = "⚡";
   }catch(err){
 
     console.error("ETH BALANCE ERROR:", err);
 
     document.getElementById("ethBalance").innerText = "Error";
+    document.getElementById("ethIcon").innerText = "❌";
   }
 }
 function logout(){
