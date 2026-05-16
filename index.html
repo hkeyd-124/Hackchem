@@ -621,7 +621,7 @@ function isMobileDevice(){
 
     chains: [11155111], // Sepolia
 
-    showQrModal: false,
+    showQrModal: true,
 
     metadata: {
       name: "HackChem",
@@ -780,6 +780,7 @@ localStorage.setItem("uid", uid);
     const isFirst = await checkFirstTime();
 
     if (!isFirst) {
+     hideLoading();
       window.location.href = "home.html";
     }
 
@@ -829,7 +830,7 @@ const ref = window.doc(window.db, "users", uid);
   });
 
   document.getElementById("nameModal").style.display = "none";
-
+hideLoading();
   window.location.href = "home.html";
 }
   // ============================
