@@ -560,7 +560,8 @@ h1 {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
-<script src="https://unpkg.com/@web3modal/standalone"></script>
+<script src="https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider/dist/index.umd.min.js"></script>
+<script src="https://unpkg.com/@walletconnect/modal@2.6.2/dist/index.umd.js"></script>
 <!-- FIREBASE -->
 <script type="module">
  import { 
@@ -611,29 +612,40 @@ function isMobileDevice(){
 
 async function connectMobileWallet(){
 
-  const web3Modal = new window.Web3ModalStandalone.default({
+  const provider =
+    await window.EthereumProvider.init({
 
-    projectId: "2f05ae7c3f4b4f4e8f7d0f6f4d5d3a11",
+      projectId: "2f05ae7c3f4b4f4e8f7d0f6f4d5d3a11",
 
-    walletConnectVersion: 2,
+      chains: [11155111],
 
-    themeMode: "light",
+      showQrModal: true,
 
-    chains: [11155111],
+      optionalChains: [11155111],
 
-    defaultChain: 11155111,
+      methods: [
+        "eth_sendTransaction",
+        "personal_sign",
+        "eth_signTypedData",
+        "eth_sign"
+      ],
 
-    metadata: {
-      name: "HackChem",
-      description: "HackChem Web3 Learning",
-      url: window.location.origin,
-      icons: [
-        window.location.origin + "/assets/images/logohackchem.png"
-      ]
-    }
-  });
+      optionalMethods: [
+        "wallet_switchEthereumChain",
+        "wallet_addEthereumChain"
+      ],
 
-  const provider = await web3Modal.connect();
+      metadata: {
+        name: "HackChem",
+        description: "HackChem Web3 Learning",
+        url: window.location.origin,
+        icons: [
+          window.location.origin + "/assets/images/logohackchem.png"
+        ]
+      }
+    });
+
+  await provider.connect();
 
   return provider;
 }
