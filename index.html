@@ -609,9 +609,17 @@ const projectId = 'a9297c8ae834401d3652a5fe0b85060d';
 let walletAddress = "";
 let wcProvider = null;
 function isMobile() {
-  return /Android|iPhone|iPad|iPod/i
-    .test(navigator.userAgent);
+  return (
+    /Android|iPhone|iPad|iPod/i
+      .test(navigator.userAgent)
+
+    ||
+
+    (navigator.maxTouchPoints > 1
+      && /Macintosh/.test(navigator.userAgent))
+  );
 }
+
 // CONNECT WALLET (MetaMask chuẩn)
 
 window.connectWallet = async function () {
@@ -625,8 +633,9 @@ window.connectWallet = async function () {
     // =========================
     // DESKTOP + EXTENSION
     // =========================
-    if (!isMobile() && window.ethereum) {
-
+if (
+ !isMobile() && window.ethereum && window.ethereum.isMetaMask)
+ {
       await window.ethereum.request({
         method: "eth_requestAccounts"
       });
@@ -644,7 +653,7 @@ window.connectWallet = async function () {
       wcProvider = await EthereumProvider.init({
         projectId,
         chains: [11155111],
-        showQrModal: true,
+        showQrModal: !isMobile(),
 
         metadata: {
           name: 'HackChem',
@@ -657,7 +666,7 @@ window.connectWallet = async function () {
       });
 
      await wcProvider.enable();
-
+await new Promise(resolve => setTimeout(resolve, 1200) );
       ethersProvider =
         new ethers.BrowserProvider(wcProvider);
     }
@@ -672,7 +681,7 @@ window.connectWallet = async function () {
     const walletAddress =
       await signer.getAddress();
 
-    const wallet = walletAddress;
+    const wallet = walletAddress.toLowerCase();
 
     // =========================
     // UID LOGIC
@@ -712,8 +721,7 @@ window.connectWallet = async function () {
     // =========================
     // SAVE
     // =========================
-
-    localStorage.setItem("wallet", walletAddress);
+    localStorage.setItem("wallet", wallet);
     localStorage.setItem("uid", uid);
 
     await window.saveUser(uid);
