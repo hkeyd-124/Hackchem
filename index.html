@@ -621,7 +621,7 @@ function isMobileDevice(){
 
     chains: [11155111], // Sepolia
 
-    showQrModal: true,
+    showQrModal: !isMobileDevice(),
 
     metadata: {
       name: "HackChem",
