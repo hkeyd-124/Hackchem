@@ -560,11 +560,7 @@ h1 {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
- <script type="module">
-  import EthereumProvider from "https://esm.sh/@walletconnect/ethereum-provider@2.17.0";
-
-  window.WalletConnectProvider = EthereumProvider;
-</script>
+<script src="https://unpkg.com/@web3modal/standalone"></script>
 <!-- FIREBASE -->
 <script type="module">
  import { 
@@ -612,32 +608,35 @@ function isMobileDevice(){
     navigator.userAgent
   );
 }
- async function connectMobileWallet(){
 
-  // WalletConnect Provider
-  const provider = await window.WalletConnectProvider.init({
+async function connectMobileWallet(){
+  const modal = new window.Web3Modal.Web3Modal({
 
     projectId: "2f05ae7c3f4b4f4e8f7d0f6f4d5d3a11",
 
-    chains: [11155111], // Sepolia
+    standaloneChains: [
+      {
+        id: 11155111,
+        name: "Sepolia",
+        rpcUrl: "https://rpc.sepolia.org",
+        nativeCurrency: {
+          name: "ETH",
+          symbol: "ETH"
+        },
+        explorerUrl: "https://sepolia.etherscan.io"
+      }
+    ],
 
-    showQrModal: !isMobileDevice(),
+    themeMode: "light",
 
-    metadata: {
-      name: "HackChem",
-      description: "HackChem Web3 Learning",
-      url: window.location.origin,
-      icons: [
-        window.location.origin + "/assets/images/logohackchem.png"
-      ]
-    }
+    walletConnectVersion: 2
   });
 
-  // connect
-  await provider.connect();
+  const connection = await modal.connect();
 
-  return provider;
+  return connection;
 }
+ 
 // CONNECT WALLET (MetaMask chuẩn)
 window.connectWallet = async function() {
 showLoading();
