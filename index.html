@@ -558,11 +558,13 @@ h1 {
   </button>
 </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
 <!-- FIREBASE + JS GIỮ NGUYÊN -->
 <!-- DÁN NGUYÊN SCRIPT CŨ CỦA BẠN Ở ĐÂY -->
 <!-- FIREBASE -->
 <script type="module">
+ import { createWeb3Modal, defaultConfig }
+from 'https://esm.sh/@web3modal/ethers'
  import { 
   getAuth, 
   sendEmailVerification,
@@ -579,7 +581,32 @@ window.createUser = createUser;
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, setDoc, doc, getDoc, updateDoc } 
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const projectId = 'a9297c8ae834401d3652a5fe0b85060d';
 
+const sepolia = {
+  chainId: 11155111,
+  name: 'Sepolia',
+  currency: 'ETH',
+  explorerUrl: 'https://sepolia.etherscan.io',
+  rpcUrl: 'https://rpc.sepolia.org'
+};
+
+const metadata = {
+  name: 'HackChem',
+  description: 'HackChem Web3 Learning',
+  url: window.location.origin,
+  icons: ['https://yourdomain.com/icon.png']
+};
+
+const ethersConfig = defaultConfig({
+  metadata
+});
+
+const modal = createWeb3Modal({
+  ethersConfig,
+  chains: [sepolia],
+  projectId
+});
   const firebaseConfig = {
     apiKey: "AIzaSyBSteBiC3fkkZfbXqOkNkbqrPMl_AWvJbU",
   authDomain: "hack-chem-v1.firebaseapp.com",
@@ -605,121 +632,87 @@ window.createUser = createUser;
 let walletAddress = "";
 
 // CONNECT WALLET (MetaMask chuẩn)
-window.connectWallet = async function() {
-showLoading();
-  if (!window.ethereum) {
-    alert("Bạn cần cài MetaMask!");
-    return;
-  }
+window.connectWallet = async function () {
+
+  showLoading();
 
   try {
 
-    // 1. CONNECT
-    const accounts = await window.ethereum.request({
-      method: "eth_requestAccounts"
-    });
+    // 1. OPEN WALLET MODAL
+    const provider = await modal.connect();
 
-    walletAddress = accounts[0];
-const wallet = walletAddress;
+    // 2. ETHERS PROVIDER
+    const ethersProvider =
+      new ethers.BrowserProvider(provider);
 
-// 🔥 NEW: lấy hoặc tạo UID
-// 🔥 LẤY UID HIỆN TẠI (nếu có)
-let uid = localStorage.getItem("uid");
+    // 3. SIGNER
+    const signer =
+      await ethersProvider.getSigner();
 
-// ============================
-// 🔥 CASE 1: đã login (email trước)
-// ============================
-if(uid){
+    // 4. ADDRESS
+    const walletAddress =
+      await signer.getAddress();
 
-  await setDoc(doc(db, "users", uid), {
-    wallet: wallet,
-    "providers.wallet": true
-  }, { merge: true });
+    const wallet = walletAddress;
 
-  await setDoc(doc(db, "wallet_index", wallet), {
-    uid: uid
-  });
+    // ============================
+    // UID LOGIC GIỮ NGUYÊN
+    // ============================
 
-}
+    let uid = localStorage.getItem("uid");
 
-// ============================
-// 🔥 CASE 2: chưa login gì
-// ============================
-else{
+    if(uid){
 
-  uid = await getUserByWallet(wallet);
+      await setDoc(doc(db, "users", uid), {
+        wallet: wallet,
+        "providers.wallet": true
+      }, { merge: true });
 
-  if(!uid){
-    uid = await createUser({ wallet });
-  }
+      await setDoc(doc(db, "wallet_index", wallet), {
+        uid: uid
+      });
 
-}
-    // 2. CHECK NETWORK (Sepolia)
-    let chainId = await ethereum.request({
-      method: "eth_chainId"
-    });
+    } else {
 
-    if (chainId !== "0xaa36a7") {
-      try {
-        await ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0xaa36a7" }]
-        });
-      } catch (err) {
+      uid = await getUserByWallet(wallet);
 
-        // nếu chưa có mạng → thêm luôn
-        if (err.code === 4902) {
-          await ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [{
-              chainId: "0xaa36a7",
-              chainName: "Sepolia",
-              rpcUrls: ["https://rpc.sepolia.org"],
-              nativeCurrency: {
-                name: "ETH",
-                symbol: "ETH",
-                decimals: 18
-              },
-              blockExplorerUrls: ["https://sepolia.etherscan.io"]
-            }]
-          });
-        }
+      if(!uid){
+        uid = await createUser({ wallet });
       }
     }
 
-    // 3. SIGN (bắt buộc)
-    const message = "Login HackChem - " + Date.now();
+    // 5. SIGN MESSAGE
+    const message =
+      "Login HackChem - " + Date.now();
 
-    await ethereum.request({
-      method: "personal_sign",
-      params: [message, walletAddress]
-    });
+    await signer.signMessage(message);
 
-    // 4. SAVE
-    const oldWallet = localStorage.getItem("wallet");
-
-if(oldWallet && oldWallet !== walletAddress){
-  localStorage.removeItem("uid"); // 🔥 reset toàn bộ
-}
+    // 6. SAVE LOCAL
     localStorage.setItem("wallet", walletAddress);
-localStorage.setItem("uid", uid);
+    localStorage.setItem("uid", uid);
 
-    // 5. FIREBASE
+    // 7. FIREBASE SAVE
     await window.saveUser(uid);
 
-    // 6. CHECK FIRST TIME
+    // 8. FIRST TIME CHECK
     const isFirst = await checkFirstTime();
 
     if (!isFirst) {
       window.location.href = "home.html";
+    } else {
+      hideLoading();
     }
 
-  }catch (err) {
-  console.error(err);
-  alert("Kết nối ví thất bại");
-  hideLoading(); // 🔥 THÊM
+  } catch (err) {
+
+    console.error(err);
+
+    alert("Kết nối ví thất bại");
+
+    hideLoading();
+  }
 }
-}
+
 
 // CHECK FIRST
 async function checkFirstTime() {
