@@ -496,7 +496,7 @@ h1 {
       <span>Or</span>
     </div>
 
-    <div class="wallet" onclick="connectWallet()">
+    <div class="wallet" onclick="window.connectWallet()">
   <div class="wallet-left">
     <!-- ICON -->
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
@@ -584,18 +584,6 @@ window.createUser = createUser;
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const projectId = 'a9297c8ae834401d3652a5fe0b85060d';
 
-const provider = await EthereumProvider.init({
-  projectId,
-  chains: [11155111],
-  showQrModal: true,
-  metadata: {
-    name: 'HackChem',
-    description: 'HackChem Web3 Learning',
-    url: window.location.origin,
-    icons: ['https://walletconnect.com/walletconnect-logo.png']
-  }
-});
-
   const firebaseConfig = {
     apiKey: "AIzaSyBSteBiC3fkkZfbXqOkNkbqrPMl_AWvJbU",
   authDomain: "hack-chem-v1.firebaseapp.com",
@@ -620,47 +608,75 @@ const provider = await EthereumProvider.init({
   
 let walletAddress = "";
 let wcProvider = null;
+function isMobile() {
+  return /Android|iPhone|iPad|iPod/i
+    .test(navigator.userAgent);
+}
 // CONNECT WALLET (MetaMask chuẩn)
+
 window.connectWallet = async function () {
 
   showLoading();
 
   try {
 
-    // 1. INIT PROVIDER
-    wcProvider = await EthereumProvider.init({
-      projectId,
-      chains: [11155111],
-      showQrModal: true,
+    let ethersProvider;
 
-      metadata: {
-        name: 'HackChem',
-        description: 'HackChem Web3 Learning',
-        url: window.location.origin,
-        icons: ['https://walletconnect.com/walletconnect-logo.png']
-      }
-    });
+    // =========================
+    // DESKTOP + EXTENSION
+    // =========================
+    if (!isMobile() && window.ethereum) {
 
-    // 2. CONNECT
-    await wcProvider.connect();
+      await window.ethereum.request({
+        method: "eth_requestAccounts"
+      });
 
-    // 3. ETHERS PROVIDER
-    const ethersProvider =
-      new ethers.BrowserProvider(wcProvider);
+      ethersProvider =
+        new ethers.BrowserProvider(window.ethereum);
 
-    // 4. SIGNER
+    }
+
+    // =========================
+    // MOBILE / NO EXTENSION
+    // =========================
+    else {
+
+      wcProvider = await EthereumProvider.init({
+        projectId,
+        chains: [11155111],
+        showQrModal: true,
+
+        metadata: {
+          name: 'HackChem',
+          description: 'HackChem Web3 Learning',
+          url: window.location.origin,
+          icons: [
+            'https://walletconnect.com/walletconnect-logo.png'
+          ]
+        }
+      });
+
+     await wcProvider.enable();
+
+      ethersProvider =
+        new ethers.BrowserProvider(wcProvider);
+    }
+
+    // =========================
+    // SIGNER
+    // =========================
+
     const signer =
       await ethersProvider.getSigner();
 
-    // 5. ADDRESS
     const walletAddress =
       await signer.getAddress();
 
     const wallet = walletAddress;
 
-    // ============================
+    // =========================
     // UID LOGIC
-    // ============================
+    // =========================
 
     let uid = localStorage.getItem("uid");
 
@@ -684,25 +700,38 @@ window.connectWallet = async function () {
       }
     }
 
-    // 6. SIGN MESSAGE
+    // =========================
+    // SIGN MESSAGE
+    // =========================
+
     const message =
       "Login HackChem - " + Date.now();
 
     await signer.signMessage(message);
 
-    // 7. SAVE
+    // =========================
+    // SAVE
+    // =========================
+
     localStorage.setItem("wallet", walletAddress);
     localStorage.setItem("uid", uid);
 
-    // 8. FIREBASE SAVE
     await window.saveUser(uid);
 
-    // 9. CHECK FIRST
-    const isFirst = await checkFirstTime();
+    // =========================
+    // FIRST TIME
+    // =========================
+
+    const isFirst =
+      await checkFirstTime();
 
     if (!isFirst) {
-      window.location.href = "home.html";
+
+      window.location.href =
+        "home.html";
+
     } else {
+
       hideLoading();
     }
 
