@@ -561,7 +561,7 @@ h1 {
 
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 <script src="https://c0fham6ik7j0.statuspage.io/embed/frame"></script>
-<script src="https://unpkg.com/@metamask/sdk@0.20.3/dist/metamask-sdk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@metamask/sdk-browser/dist/metamask-sdk.js"></script>
 <!-- FIREBASE -->
 <script type="module">
  import { 
@@ -610,9 +610,7 @@ function isMobileDevice(){
   );
 }
 async function connectMobileWallet(){
-
-  const MMSDK = new MetaMaskSDK.MetaMaskSDK({
-
+  const MMSDK = new MetaMaskSDK({
     dappMetadata: {
       name: "HackChem",
       url: window.location.href,
