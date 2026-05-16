@@ -496,7 +496,7 @@ h1 {
       <span>Or</span>
     </div>
 
-    <div class="wallet" onclick="window.connectWallet()">
+    <div class="wallet" onclick="connectWallet()">
   <div class="wallet-left">
     <!-- ICON -->
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
@@ -558,14 +558,11 @@ h1 {
   </button>
 </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
+
 <!-- FIREBASE + JS GIỮ NGUYÊN -->
 <!-- DÁN NGUYÊN SCRIPT CŨ CỦA BẠN Ở ĐÂY -->
 <!-- FIREBASE -->
 <script type="module">
-
-import EthereumProvider
-from 'https://esm.sh/@walletconnect/ethereum-provider'
  import { 
   getAuth, 
   sendEmailVerification,
@@ -582,7 +579,6 @@ window.createUser = createUser;
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, setDoc, doc, getDoc, updateDoc } 
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const projectId = 'a9297c8ae834401d3652a5fe0b85060d';
 
   const firebaseConfig = {
     apiKey: "AIzaSyBSteBiC3fkkZfbXqOkNkbqrPMl_AWvJbU",
@@ -607,150 +603,122 @@ const projectId = 'a9297c8ae834401d3652a5fe0b85060d';
 }
   
 let walletAddress = "";
-let wcProvider = null;
-function isMobile() {
-  return (
-    /Android|iPhone|iPad|iPod/i
-      .test(navigator.userAgent)
-
-    ||
-
-    (navigator.maxTouchPoints > 1
-      && /Macintosh/.test(navigator.userAgent))
-  );
-}
 
 // CONNECT WALLET (MetaMask chuẩn)
-
-window.connectWallet = async function () {
-
-  showLoading();
+window.connectWallet = async function() {
+showLoading();
+  if (!window.ethereum) {
+    alert("Bạn cần cài MetaMask!");
+    return;
+  }
 
   try {
 
-    let ethersProvider;
+    // 1. CONNECT
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts"
+    });
 
-    // =========================
-    // DESKTOP + EXTENSION
-    // =========================
-if (
- !isMobile() && window.ethereum && window.ethereum.isMetaMask)
- {
-      await window.ethereum.request({
-        method: "eth_requestAccounts"
-      });
+    walletAddress = accounts[0];
+const wallet = walletAddress;
 
-      ethersProvider =
-        new ethers.BrowserProvider(window.ethereum);
+// 🔥 NEW: lấy hoặc tạo UID
+// 🔥 LẤY UID HIỆN TẠI (nếu có)
+let uid = localStorage.getItem("uid");
 
-    }
+// ============================
+// 🔥 CASE 1: đã login (email trước)
+// ============================
+if(uid){
 
-    // =========================
-    // MOBILE / NO EXTENSION
-    // =========================
-    else {
+  await setDoc(doc(db, "users", uid), {
+    wallet: wallet,
+    "providers.wallet": true
+  }, { merge: true });
 
-      wcProvider = await EthereumProvider.init({
-        projectId,
-        chains: [11155111],
-        showQrModal: !isMobile(),
+  await setDoc(doc(db, "wallet_index", wallet), {
+    uid: uid
+  });
 
-        metadata: {
-          name: 'HackChem',
-          description: 'HackChem Web3 Learning',
-          url: window.location.origin,
-          icons: [
-            'https://walletconnect.com/walletconnect-logo.png'
-          ]
+}
+
+// ============================
+// 🔥 CASE 2: chưa login gì
+// ============================
+else{
+
+  uid = await getUserByWallet(wallet);
+
+  if(!uid){
+    uid = await createUser({ wallet });
+  }
+
+}
+    // 2. CHECK NETWORK (Sepolia)
+    let chainId = await ethereum.request({
+      method: "eth_chainId"
+    });
+
+    if (chainId !== "0xaa36a7") {
+      try {
+        await ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: "0xaa36a7" }]
+        });
+      } catch (err) {
+
+        // nếu chưa có mạng → thêm luôn
+        if (err.code === 4902) {
+          await ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: "0xaa36a7",
+              chainName: "Sepolia",
+              rpcUrls: ["https://rpc.sepolia.org"],
+              nativeCurrency: {
+                name: "ETH",
+                symbol: "ETH",
+                decimals: 18
+              },
+              blockExplorerUrls: ["https://sepolia.etherscan.io"]
+            }]
+          });
         }
-      });
-
-     await wcProvider.enable();
-await new Promise(resolve => setTimeout(resolve, 1200) );
-      ethersProvider =
-        new ethers.BrowserProvider(wcProvider);
-    }
-
-    // =========================
-    // SIGNER
-    // =========================
-
-    const signer =
-      await ethersProvider.getSigner();
-
-    const walletAddress =
-      await signer.getAddress();
-
-    const wallet = walletAddress.toLowerCase();
-
-    // =========================
-    // UID LOGIC
-    // =========================
-
-    let uid = localStorage.getItem("uid");
-
-    if(uid){
-
-      await setDoc(doc(db, "users", uid), {
-        wallet: wallet,
-        "providers.wallet": true
-      }, { merge: true });
-
-      await setDoc(doc(db, "wallet_index", wallet), {
-        uid: uid
-      });
-
-    } else {
-
-      uid = await getUserByWallet(wallet);
-
-      if(!uid){
-        uid = await createUser({ wallet });
       }
     }
 
-    // =========================
-    // SIGN MESSAGE
-    // =========================
+    // 3. SIGN (bắt buộc)
+    const message = "Login HackChem - " + Date.now();
 
-    const message =
-      "Login HackChem - " + Date.now();
+    await ethereum.request({
+      method: "personal_sign",
+      params: [message, walletAddress]
+    });
 
-    await signer.signMessage(message);
+    // 4. SAVE
+    const oldWallet = localStorage.getItem("wallet");
 
-    // =========================
-    // SAVE
-    // =========================
-    localStorage.setItem("wallet", wallet);
-    localStorage.setItem("uid", uid);
+if(oldWallet && oldWallet !== walletAddress){
+  localStorage.removeItem("uid"); // 🔥 reset toàn bộ
+}
+    localStorage.setItem("wallet", walletAddress);
+localStorage.setItem("uid", uid);
 
+    // 5. FIREBASE
     await window.saveUser(uid);
 
-    // =========================
-    // FIRST TIME
-    // =========================
-
-    const isFirst =
-      await checkFirstTime();
+    // 6. CHECK FIRST TIME
+    const isFirst = await checkFirstTime();
 
     if (!isFirst) {
-
-      window.location.href =
-        "home.html";
-
-    } else {
-
-      hideLoading();
+      window.location.href = "home.html";
     }
 
-  } catch (err) {
-
-    console.error(err);
-
-    alert("Kết nối ví thất bại");
-
-    hideLoading();
-  }
+  }catch (err) {
+  console.error(err);
+  alert("Kết nối ví thất bại");
+  hideLoading(); // 🔥 THÊM
+}
 }
 
 // CHECK FIRST
