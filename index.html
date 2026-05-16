@@ -563,8 +563,9 @@ h1 {
 <!-- DÁN NGUYÊN SCRIPT CŨ CỦA BẠN Ở ĐÂY -->
 <!-- FIREBASE -->
 <script type="module">
- import { createWeb3Modal, defaultConfig }
-from 'https://esm.sh/@web3modal/ethers'
+
+import EthereumProvider
+from 'https://esm.sh/@walletconnect/ethereum-provider'
  import { 
   getAuth, 
   sendEmailVerification,
@@ -583,30 +584,18 @@ window.createUser = createUser;
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const projectId = 'a9297c8ae834401d3652a5fe0b85060d';
 
-const sepolia = {
-  chainId: 11155111,
-  name: 'Sepolia',
-  currency: 'ETH',
-  explorerUrl: 'https://sepolia.etherscan.io',
-  rpcUrl: 'https://rpc.sepolia.org'
-};
-
-const metadata = {
-  name: 'HackChem',
-  description: 'HackChem Web3 Learning',
-  url: window.location.origin,
-  icons: ['https://yourdomain.com/icon.png']
-};
-
-const ethersConfig = defaultConfig({
-  metadata
+const provider = await EthereumProvider.init({
+  projectId,
+  chains: [11155111],
+  showQrModal: true,
+  metadata: {
+    name: 'HackChem',
+    description: 'HackChem Web3 Learning',
+    url: window.location.origin,
+    icons: ['https://walletconnect.com/walletconnect-logo.png']
+  }
 });
 
-const modal = createWeb3Modal({
-  ethersConfig,
-  chains: [sepolia],
-  projectId
-});
   const firebaseConfig = {
     apiKey: "AIzaSyBSteBiC3fkkZfbXqOkNkbqrPMl_AWvJbU",
   authDomain: "hack-chem-v1.firebaseapp.com",
@@ -630,7 +619,7 @@ const modal = createWeb3Modal({
 }
   
 let walletAddress = "";
-
+let wcProvider = null;
 // CONNECT WALLET (MetaMask chuẩn)
 window.connectWallet = async function () {
 
@@ -638,25 +627,39 @@ window.connectWallet = async function () {
 
   try {
 
-    // 1. OPEN WALLET MODAL
-    const provider = await modal.connect();
+    // 1. INIT PROVIDER
+    wcProvider = await EthereumProvider.init({
+      projectId,
+      chains: [11155111],
+      showQrModal: true,
 
-    // 2. ETHERS PROVIDER
+      metadata: {
+        name: 'HackChem',
+        description: 'HackChem Web3 Learning',
+        url: window.location.origin,
+        icons: ['https://walletconnect.com/walletconnect-logo.png']
+      }
+    });
+
+    // 2. CONNECT
+    await wcProvider.connect();
+
+    // 3. ETHERS PROVIDER
     const ethersProvider =
-      new ethers.BrowserProvider(provider);
+      new ethers.BrowserProvider(wcProvider);
 
-    // 3. SIGNER
+    // 4. SIGNER
     const signer =
       await ethersProvider.getSigner();
 
-    // 4. ADDRESS
+    // 5. ADDRESS
     const walletAddress =
       await signer.getAddress();
 
     const wallet = walletAddress;
 
     // ============================
-    // UID LOGIC GIỮ NGUYÊN
+    // UID LOGIC
     // ============================
 
     let uid = localStorage.getItem("uid");
@@ -681,20 +684,20 @@ window.connectWallet = async function () {
       }
     }
 
-    // 5. SIGN MESSAGE
+    // 6. SIGN MESSAGE
     const message =
       "Login HackChem - " + Date.now();
 
     await signer.signMessage(message);
 
-    // 6. SAVE LOCAL
+    // 7. SAVE
     localStorage.setItem("wallet", walletAddress);
     localStorage.setItem("uid", uid);
 
-    // 7. FIREBASE SAVE
+    // 8. FIREBASE SAVE
     await window.saveUser(uid);
 
-    // 8. FIRST TIME CHECK
+    // 9. CHECK FIRST
     const isFirst = await checkFirstTime();
 
     if (!isFirst) {
@@ -712,7 +715,6 @@ window.connectWallet = async function () {
     hideLoading();
   }
 }
-
 
 // CHECK FIRST
 async function checkFirstTime() {
