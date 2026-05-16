@@ -613,8 +613,13 @@ function isMobileDevice(){
 async function connectMobileWallet(){
 console.log("window.EthereumProvider =", window.EthereumProvider);
 console.log("window.WalletConnectModal =", window.WalletConnectModal);
+
+console.log(
+  "WalletConnectEthereumProvider =",
+  window.WalletConnectEthereumProvider
+);
   const provider =
-  await window.EthereumProvider.init({
+  await window.WalletConnectEthereumProvider.init({
 
       projectId: "2f05ae7c3f4b4f4e8f7d0f6f4d5d3a11",
 
