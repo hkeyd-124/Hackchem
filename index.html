@@ -610,31 +610,32 @@ function isMobileDevice(){
 }
 
 async function connectMobileWallet(){
-  const modal = new window.Web3Modal.Web3Modal({
+
+  const web3Modal = new window.Web3ModalStandalone.default({
 
     projectId: "2f05ae7c3f4b4f4e8f7d0f6f4d5d3a11",
 
-    standaloneChains: [
-      {
-        id: 11155111,
-        name: "Sepolia",
-        rpcUrl: "https://rpc.sepolia.org",
-        nativeCurrency: {
-          name: "ETH",
-          symbol: "ETH"
-        },
-        explorerUrl: "https://sepolia.etherscan.io"
-      }
-    ],
+    walletConnectVersion: 2,
 
     themeMode: "light",
 
-    walletConnectVersion: 2
+    chains: [11155111],
+
+    defaultChain: 11155111,
+
+    metadata: {
+      name: "HackChem",
+      description: "HackChem Web3 Learning",
+      url: window.location.origin,
+      icons: [
+        window.location.origin + "/assets/images/logohackchem.png"
+      ]
+    }
   });
 
-  const connection = await modal.connect();
+  const provider = await web3Modal.connect();
 
-  return connection;
+  return provider;
 }
  
 // CONNECT WALLET (MetaMask chuẩn)
