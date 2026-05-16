@@ -310,6 +310,7 @@ padding: 0 10px;
 <div class="menu-item" onclick="goLesson()">Khám phá khóa học</div>
 <div class="menu-item" onclick="goResources()">Tài nguyên học tập</div>
 <div class="menu-item" onclick="toggleLeaderboard()">Bảng xếp hạng</div>
+<div class="menu-item" onclick="openFaucetModal()">🚰 Faucet</div>
 </div>
 
 <div class="main">
@@ -767,6 +768,19 @@ function toggleLeaderboard(){
     box.style.display = "none"
     home.style.display = "block"
   }
+}
+  function openFaucetModal(){
+  document.getElementById("faucetModal")
+    .classList.remove("hidden");
+}
+
+function closeFaucetModal(){
+  document.getElementById("faucetModal")
+    .classList.add("hidden");
+}
+
+function openFaucet(url){
+  window.open(url, "_blank");
 }
 function openCheckin(){
   document.getElementById("checkinModal").classList.remove("hidden")
@@ -1635,6 +1649,252 @@ window.linkEmail = async function(){
 
 }
 </script>
+  <!-- 🚰 FAUCET MODAL -->
+<div id="faucetModal" class="quiz-modal hidden">
+
+  <div class="quiz-box" style="
+    width:700px;
+    padding:40px;
+    border-radius:35px;
+    background:white;
+  ">
+
+    <!-- CLOSE -->
+    <span class="close-btn"
+      onclick="closeFaucetModal()"
+      style="
+        font-size:28px;
+        right:25px;
+        top:20px;
+      ">
+      ✕
+    </span>
+
+    <!-- HEADER -->
+    <div style="
+      text-align:center;
+      margin-bottom:35px;
+    ">
+
+      <div style="
+        font-size:55px;
+        margin-bottom:10px;
+      ">
+        🚰
+      </div>
+
+      <div style="
+        font-size:42px;
+        font-weight:bold;
+      ">
+        Sepolia Faucet
+      </div>
+
+      <div style="
+        color:#777;
+        margin-top:10px;
+        font-size:20px;
+      ">
+        Chọn faucet để nhận Sepolia ETH
+      </div>
+
+    </div>
+
+    <!-- GOOGLE FAUCET -->
+    <div onclick="openFaucet('https://cloud.google.com/application/web3/faucet/ethereum/sepolia')"
+
+      style="
+      background:#f8fafc;
+      border:1px solid #e5e7eb;
+      border-radius:28px;
+      padding:28px;
+      margin-bottom:25px;
+
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+
+      cursor:pointer;
+      transition:0.2s;
+    "
+
+    onmouseover="
+      this.style.transform='translateY(-3px)';
+      this.style.boxShadow='0 10px 25px rgba(0,0,0,0.08)';
+    "
+
+    onmouseout="
+      this.style.transform='translateY(0)';
+      this.style.boxShadow='none';
+    "
+    >
+
+      <!-- LEFT -->
+      <div style="
+        display:flex;
+        align-items:center;
+        gap:20px;
+      ">
+
+        <!-- GOOGLE ICON -->
+        <div style="
+          width:80px;
+          height:80px;
+          border-radius:22px;
+          background:white;
+
+          display:flex;
+          align-items:center;
+          justify-content:center;
+
+          font-size:42px;
+        ">
+          ☁️
+        </div>
+
+        <!-- TEXT -->
+        <div>
+
+          <div style="
+            font-size:22px;
+            font-weight:bold;
+            margin-bottom:6px;
+          ">
+            Google Cloud Web3 Faucet
+          </div>
+
+          <div style="
+            color:#666;
+            font-size:18px;
+          ">
+            Nhận Sepolia ETH từ Google Cloud
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ARROW -->
+      <div style="
+        font-size:45px;
+        color:#666;
+      ">
+        ›
+      </div>
+
+    </div>
+
+    <!-- POW FAUCET -->
+    <div onclick="openFaucet('https://sepolia-faucet.pk910.de/')"
+
+      style="
+      background:#f8fafc;
+      border:1px solid #e5e7eb;
+      border-radius:28px;
+      padding:28px;
+
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+
+      cursor:pointer;
+      transition:0.2s;
+    "
+
+    onmouseover="
+      this.style.transform='translateY(-3px)';
+      this.style.boxShadow='0 10px 25px rgba(0,0,0,0.08)';
+    "
+
+    onmouseout="
+      this.style.transform='translateY(0)';
+      this.style.boxShadow='none';
+    "
+    >
+
+      <!-- LEFT -->
+      <div style="
+        display:flex;
+        align-items:center;
+        gap:20px;
+      ">
+
+        <!-- DROP ICON -->
+        <div style="
+          width:80px;
+          height:80px;
+          border-radius:22px;
+          background:white;
+
+          display:flex;
+          align-items:center;
+          justify-content:center;
+        ">
+
+          <!-- CUSTOM DROP -->
+          <svg width="42" height="52" viewBox="0 0 64 80"
+            xmlns="http://www.w3.org/2000/svg">
+
+            <defs>
+              <linearGradient id="dropGrad"
+                x1="0%" y1="0%"
+                x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#8b5cf6"/>
+                <stop offset="100%" stop-color="#6366f1"/>
+              </linearGradient>
+            </defs>
+
+            <path fill="url(#dropGrad)"
+              d="M32 0
+                 C32 0 4 34 4 52
+                 C4 68 16 80 32 80
+                 C48 80 60 68 60 52
+                 C60 34 32 0 32 0Z"/>
+
+            <path fill="white" opacity="0.7"
+              d="M20 55
+                 C20 65 28 72 38 72"
+              stroke="white"
+              stroke-width="5"
+              stroke-linecap="round"/>
+          </svg>
+
+        </div>
+
+        <!-- TEXT -->
+        <div>
+
+          <div style="
+            font-size:22px;
+            font-weight:bold;
+            margin-bottom:6px;
+          ">
+            Sepolia PoW Faucet
+          </div>
+
+          <div style="
+            color:#666;
+            font-size:18px;
+          ">
+            Nhận Sepolia ETH qua PoW Faucet
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ARROW -->
+      <div style="
+        font-size:45px;
+        color:#666;
+      ">
+        ›
+      </div>
+
+    </div>
+
+  </div>
+</div>
   <!-- 🔥 CHECK-IN MODAL -->
 <div id="checkinModal" class="quiz-modal hidden">
 <div class="quiz-box" style="width:650px; padding:30px 30px 40px;">
