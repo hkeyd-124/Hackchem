@@ -559,9 +559,9 @@ h1 {
 </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.1/ethers.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.17.0/dist/index.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@walletconnect/modal@2.6.2/dist/index.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script src="https://c0fham6ik7j0.statuspage.io/embed/frame"></script>
+<script src="https://unpkg.com/@metamask/sdk@0.20.3/dist/metamask-sdk.js"></script>
 <!-- FIREBASE -->
 <script type="module">
  import { 
@@ -609,53 +609,30 @@ function isMobileDevice(){
     navigator.userAgent
   );
 }
-
 async function connectMobileWallet(){
-console.log("window.EthereumProvider =", window.EthereumProvider);
-console.log("window.WalletConnectModal =", window.WalletConnectModal);
 
-console.log(
-  "WalletConnectEthereumProvider =",
-  window.WalletConnectEthereumProvider
-);
-  const provider =
-  await window.WalletConnectEthereumProvider.init({
+  const MMSDK = new MetaMaskSDK.MetaMaskSDK({
 
-      projectId: "2f05ae7c3f4b4f4e8f7d0f6f4d5d3a11",
+    dappMetadata: {
+      name: "HackChem",
+      url: window.location.href,
+    },
 
-      chains: [11155111],
+    checkInstallationImmediately: false,
 
-      showQrModal: true,
+    logging: {
+      developerMode: false
+    }
+  });
 
-      optionalChains: [11155111],
+  const provider = MMSDK.getProvider();
 
-      methods: [
-        "eth_sendTransaction",
-        "personal_sign",
-        "eth_signTypedData",
-        "eth_sign"
-      ],
-
-      optionalMethods: [
-        "wallet_switchEthereumChain",
-        "wallet_addEthereumChain"
-      ],
-
-      metadata: {
-        name: "HackChem",
-        description: "HackChem Web3 Learning",
-        url: window.location.origin,
-        icons: [
-          window.location.origin + "/assets/images/logohackchem.png"
-        ]
-      }
-    });
-
-  await provider.connect();
+  await provider.request({
+    method: "eth_requestAccounts"
+  });
 
   return provider;
 }
- 
 // CONNECT WALLET (MetaMask chuẩn)
 window.connectWallet = async function() {
 showLoading();
