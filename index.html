@@ -559,16 +559,8 @@ h1 {
 </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-<script src="https://c0fham6ik7j0.statuspage.io/embed/frame"></script>
-<script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.0/dist/index.umd.min.js"></script>
- <script>
-console.log(
-  "WalletConnectEthereumProvider =",
-  window.WalletConnectEthereumProvider
-);
-</script>
-<script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
+<!-- FIREBASE + JS GIỮ NGUYÊN -->
+<!-- DÁN NGUYÊN SCRIPT CŨ CỦA BẠN Ở ĐÂY -->
 <!-- FIREBASE -->
 <script type="module">
  import { 
@@ -611,80 +603,19 @@ window.createUser = createUser;
 }
   
 let walletAddress = "";
-function isMobileDevice(){
-  return /Android|iPhone|iPad|iPod/i.test(
-    navigator.userAgent
-  );
-}
-async function connectMobileWallet(){
 
-  const provider = await window.WalletConnectEthereumProvider.init({
-
-    projectId: "demo",
-
-    chains: [11155111],
-
-    showQrModal: false,
-
-    metadata: {
-      name: "HackChem",
-      description: "HackChem Web3 Login",
-      url: window.location.href,
-      icons: []
-    }
-  });
-
-  await provider.enable();
-
-  return provider;
-}
 // CONNECT WALLET (MetaMask chuẩn)
 window.connectWallet = async function() {
 showLoading();
-  let provider;
-
-// ======================
-// MOBILE → WalletConnect
-// ======================
-if(isMobileDevice()){
-
-  try{
-
-    provider = await connectMobileWallet();
-
-  }catch(err){
-
-    console.error(err);
-
-    alert("Không kết nối được ví mobile");
-
-    hideLoading();
-
-    return;
-  }
-
-}
-
-// ======================
-// DESKTOP → MetaMask
-// ======================
-else{
-
   if (!window.ethereum) {
-
     alert("Bạn cần cài MetaMask!");
-
-    hideLoading();
-
     return;
   }
 
-  provider = window.ethereum;
-}
   try {
 
     // 1. CONNECT
-    const accounts = await provider.request({
+    const accounts = await window.ethereum.request({
       method: "eth_requestAccounts"
     });
 
@@ -724,13 +655,13 @@ else{
 
 }
     // 2. CHECK NETWORK (Sepolia)
-    let chainId = await provider.request({
+    let chainId = await ethereum.request({
       method: "eth_chainId"
     });
 
     if (chainId !== "0xaa36a7") {
       try {
-        await provider.request({
+        await ethereum.request({
           method: "wallet_switchEthereumChain",
           params: [{ chainId: "0xaa36a7" }]
         });
@@ -738,7 +669,7 @@ else{
 
         // nếu chưa có mạng → thêm luôn
         if (err.code === 4902) {
-          await provider.request({
+          await ethereum.request({
             method: "wallet_addEthereumChain",
             params: [{
               chainId: "0xaa36a7",
@@ -759,7 +690,7 @@ else{
     // 3. SIGN (bắt buộc)
     const message = "Login HackChem - " + Date.now();
 
-    await provider.request({
+    await ethereum.request({
       method: "personal_sign",
       params: [message, walletAddress]
     });
@@ -780,7 +711,6 @@ localStorage.setItem("uid", uid);
     const isFirst = await checkFirstTime();
 
     if (!isFirst) {
-     hideLoading();
       window.location.href = "home.html";
     }
 
@@ -830,7 +760,7 @@ const ref = window.doc(window.db, "users", uid);
   });
 
   document.getElementById("nameModal").style.display = "none";
-hideLoading();
+
   window.location.href = "home.html";
 }
   // ============================
